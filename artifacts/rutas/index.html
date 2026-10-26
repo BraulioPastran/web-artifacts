@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aixopluc Outdoors — Mapa de Rutas de Galicia</title>
+  <title>Rutas — Mapa Interactivo</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Leaflet CSS -->
@@ -37,9 +37,9 @@
         </div>
         <div>
           <h1 class="font-bold text-sm sm:text-base tracking-tight text-white flex items-center gap-2">
-            Aixopluc Outdoors <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Galicia</span>
+            Rutas <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Mapa Activo</span>
           </h1>
-          <p class="text-xs text-slate-400 hidden sm:block">Mapa interactivo de rutas, bosques y cumbres salvajes</p>
+          <p class="text-xs text-slate-400 hidden sm:block">Visualizador interactivo de rutas de senderismo</p>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -64,7 +64,7 @@
 
     <!-- Floating / Slide-over Sidebar for Route Details -->
     <aside id="sidebar" class="absolute inset-y-0 right-0 z-40 w-full sm:w-96 bg-slate-900/95 backdrop-blur border-l border-slate-800 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/9ન્દ">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
         <div class="flex items-center gap-2">
           <i data-lucide="compass" class="w-5 h-5 text-emerald-400"></i>
           <h2 class="font-semibold text-white text-base">Rutas Registradas</h2>
@@ -96,18 +96,17 @@
       </div>
 
       <div class="p-3 border-t border-slate-800 bg-slate-950/80 text-center text-xs text-slate-500">
-        Aixopluc Outdoors · Galicia 🏔️🌲
+        Rutas & Outdoor · 100% Interactivo 🏔️🌲
       </div>
     </aside>
 
   </div>
 
-  <!-- Route Details Modal (Popup on click) -->
   <script>
     // Lucide Icons
     lucide.createIcons();
 
-    // Routes Data parsed from RUTAS-AIXOPLUC.md
+    // Routes Data
     const routesData = [
       {
         id: 1,
@@ -167,10 +166,9 @@
     // Add zoom control to top-left
     L.control.zoom({ position: 'topleft' }).addTo(map);
 
-    // Add dark tile layer (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
+    // Add Esri World Topo Map (Free, no API key required, highly reliable)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
       maxZoom: 19
     }).addTo(map);
 
@@ -191,7 +189,6 @@
 
     // Render Markers on Map
     function renderMarkers(filteredRoutes) {
-      // Clear existing markers
       Object.values(markers).forEach(m => map.removeLayer(m));
 
       filteredRoutes.forEach(r => {
@@ -264,14 +261,12 @@
       if (r && markers[id]) {
         map.setView([r.lat, r.lng], 13, { animate: true });
         markers[id].openPopup();
-        // On mobile, close sidebar on click
         if (window.innerWidth < 640) {
           toggleSidebar();
         }
       }
     }
 
-    // Sidebar Toggle
     const sidebar = document.getElementById('sidebar');
     let sidebarOpen = false;
 
@@ -290,11 +285,9 @@
     document.getElementById('routeSearch').addEventListener('input', updateView);
     document.getElementById('statusFilter').addEventListener('change', updateView);
 
-    // Initial load
     window.addEventListener('DOMContentLoaded', () => {
       renderMarkers(routesData);
       renderSidebar(routesData);
-      // Auto open sidebar on desktop
       if (window.innerWidth >= 640) {
         toggleSidebar();
       }
