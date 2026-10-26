@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aixopluc Outdoors — Mapa de Rutas de Galicia</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    #map { height: calc(100vh - 4rem); width: 100%; z-index: 10; }
+    .leaflet-popup-content-wrapper {
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 1rem;
+      padding: 4px;
+    }
+    .leaflet-popup-tip { background: #0f172a; border: 1px solid #334155; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur z-30 flex-shrink-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 font-bold text-lg">
+          🏔️
+        </div>
+        <div>
+          <h1 class="font-bold text-sm sm:text-base tracking-tight text-white flex items-center gap-2">
+            Aixopluc Outdoors <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Galicia</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Mapa interactivo de rutas, bosques y cumbres salvajes</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="sidebarToggle" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-medium transition flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="menu" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Lista de Rutas</span>
+          <span id="routeCountBadge" class="px-1.5 py-0.2 rounded-full bg-emerald-800 text-white text-xs">4</span>
+        </button>
+        <a href="../../" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium border border-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Catálogo</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container: Map + Sidebar -->
+  <div class="flex-1 relative flex overflow-hidden">
+
+    <!-- Leaflet Map -->
+    <div id="map" class="flex-1"></div>
+
+    <!-- Floating / Slide-over Sidebar for Route Details -->
+    <aside id="sidebar" class="absolute inset-y-0 right-0 z-40 w-full sm:w-96 bg-slate-900/95 backdrop-blur border-l border-slate-800 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/9ન્દ">
+        <div class="flex items-center gap-2">
+          <i data-lucide="compass" class="w-5 h-5 text-emerald-400"></i>
+          <h2 class="font-semibold text-white text-base">Rutas Registradas</h2>
+        </div>
+        <button id="closeSidebar" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Route Filter / Search -->
+      <div class="p-4 border-b border-slate-800/60 bg-slate-950/40 space-y-3">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="routeSearch" placeholder="Buscar ruta o zona..." class="w-full bg-slate-800 text-slate-200 text-xs sm:text-sm rounded-lg pl-9 pr-3 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-slate-400">Filtro Estado:</span>
+          <select id="statusFilter" class="bg-slate-800 text-slate-200 rounded-md px-2 py-1 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+            <option value="all">Todas</option>
+            <option value="Verificada">Verificadas</option>
+            <option value="Pendiente">Pendientes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Route Cards List -->
+      <div id="routesList" class="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-slate-800/40">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="p-3 border-t border-slate-800 bg-slate-950/80 text-center text-xs text-slate-500">
+        Aixopluc Outdoors · Galicia 🏔️🌲
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Route Details Modal (Popup on click) -->
+  <script>
+    // Lucide Icons
+    lucide.createIcons();
+
+    // Routes Data parsed from RUTAS-AIXOPLUC.md
+    const routesData = [
+      {
+        id: 1,
+        title: "Bosque Carballeiro - Pinares",
+        category: "Bosque & Robledal",
+        status: "Pendiente",
+        location: "Galicia (Zona Boscosa)",
+        lat: 42.8782,
+        lng: -8.0254,
+        description: "Zona boscosa con predominio de carballeiro (roble) y pinares. Paisajes salvajes de Galicia.",
+        tags: ["#Montaña", "#Hiking", "#Bosque"],
+        mapsQuery: "https://www.google.com/maps/search/bosque+carballeiro+galicia+senderismo/"
+      },
+      {
+        id: 2,
+        title: "Senderismo Zona Montañosa",
+        category: "Panorámica",
+        status: "Pendiente",
+        location: "Galicia (Zona Montañosa)",
+        lat: 42.4561,
+        lng: -7.8923,
+        description: "Vistas panorámicas sobre paisaje salvaje y valles de montaña.",
+        tags: ["#Hiking", "#Panorámica"],
+        mapsQuery: "https://www.google.com/maps/search/panorámica+galicia+senderismo/"
+      },
+      {
+        id: 3,
+        title: "Cumbre Salvaje",
+        category: "Cumbre",
+        status: "Pendiente",
+        location: "Galicia (Cumbre)",
+        lat: 42.2315,
+        lng: -8.3142,
+        description: "Cumbre con vistas amplias sobre valle y gran panorámica de alta montaña gallega.",
+        tags: ["#Cumbre", "#Montaña"],
+        mapsQuery: "https://www.google.com/maps/search/cumbre+galicia+senderismo/"
+      },
+      {
+        id: 4,
+        title: "Zona Escarpada",
+        category: "Escarpado & Salvaje",
+        status: "Pendiente",
+        location: "Galicia (Zona escarpada)",
+        lat: 42.7102,
+        lng: -7.4215,
+        description: "Zona de senderismo técnica y más salvaje, ideal para exploración avanzada.",
+        tags: ["#Outdoors", "#Senderismo"],
+        mapsQuery: "https://www.google.com/maps/search/zone+escarpada+galicia+senderismo/"
+      }
+    ];
+
+    // Initialize Leaflet Map centered on Galicia
+    const map = L.map('map', {
+      zoomControl: false
+    }).setView([42.6000, -8.0000], 9);
+
+    // Add zoom control to top-left
+    L.control.zoom({ position: 'topleft' }).addTo(map);
+
+    // Add dark tile layer (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Store markers reference
+    const markers = {};
+
+    // Custom Icon creator
+    function createCustomIcon(status) {
+      const color = status === 'Verificada' ? '#10b981' : '#f59e0b';
+      return L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div style="background-color: ${color}; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 2px solid #0f172a; font-size: 12px;">🏔️</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -12]
+      });
+    }
+
+    // Render Markers on Map
+    function renderMarkers(filteredRoutes) {
+      // Clear existing markers
+      Object.values(markers).forEach(m => map.removeLayer(m));
+
+      filteredRoutes.forEach(r => {
+        const marker = L.marker([r.lat, r.lng], { icon: createCustomIcon(r.status) }).addTo(map);
+        
+        const popupContent = `
+          <div class="p-2 space-y-2 max-w-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-xs px-2 py-0.5 rounded-full ${r.status === 'Verificada' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">${r.status}</span>
+              <span class="text-xs text-slate-400">${r.category}</span>
+            </div>
+            <h3 class="font-bold text-white text-sm">${r.title}</h3>
+            <p class="text-xs text-slate-300">${r.description}</p>
+            <div class="pt-2 flex items-center justify-between border-t border-slate-800">
+              <span class="text-xs text-emerald-400 font-medium">${r.location}</span>
+              <a href="${r.mapsQuery}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition flex items-center gap-1">
+                Google Maps ↗
+              </a>
+            </div>
+          </div>
+        `;
+
+        marker.bindPopup(popupContent);
+        markers[r.id] = marker;
+      });
+    }
+
+    // Render Sidebar Cards
+    function renderSidebar(filteredRoutes) {
+      const container = document.getElementById('routesList');
+      document.getElementById('routeCountBadge').textContent = filteredRoutes.length;
+
+      if (filteredRoutes.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs">No se encontraron rutas con los filtros aplicados.</div>`;
+        return;
+      }
+
+      container.innerHTML = filteredRoutes.map(r => `
+        <div onclick="focusRoute(${r.id})" class="p-3 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 cursor-pointer transition space-y-2 group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-emerald-400 group-hover:underline">${r.category}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full ${r.status === 'Verificada' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${r.status}</span>
+          </div>
+          <h3 class="font-bold text-white text-sm">${r.title}</h3>
+          <p class="text-xs text-slate-400 line-clamp-2">${r.description}</p>
+          <div class="flex items-center justify-between pt-1 text-xs text-slate-500">
+            <span>📍 ${r.location}</span>
+            <span class="text-emerald-400 font-medium">Ver en mapa →</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateView() {
+      const q = document.getElementById('routeSearch').value.toLowerCase().trim();
+      const status = document.getElementById('statusFilter').value;
+
+      const filtered = routesData.filter(r => {
+        const matchesQ = !q || r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || r.location.toLowerCase().includes(q);
+        const matchesStatus = status === 'all' || r.status === status;
+        return matchesQ && matchesStatus;
+      });
+
+      renderMarkers(filtered);
+      renderSidebar(filtered);
+    }
+
+    function focusRoute(id) {
+      const r = routesData.find(item => item.id === id);
+      if (r && markers[id]) {
+        map.setView([r.lat, r.lng], 13, { animate: true });
+        markers[id].openPopup();
+        // On mobile, close sidebar on click
+        if (window.innerWidth < 640) {
+          toggleSidebar();
+        }
+      }
+    }
+
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    let sidebarOpen = false;
+
+    function toggleSidebar() {
+      sidebarOpen = !sidebarOpen;
+      if (sidebarOpen) {
+        sidebar.classList.remove('translate-x-full');
+      } else {
+        sidebar.classList.add('translate-x-full');
+      }
+    }
+
+    document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+    document.getElementById('closeSidebar').addEventListener('click', toggleSidebar);
+
+    document.getElementById('routeSearch').addEventListener('input', updateView);
+    document.getElementById('statusFilter').addEventListener('change', updateView);
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMarkers(routesData);
+      renderSidebar(routesData);
+      // Auto open sidebar on desktop
+      if (window.innerWidth >= 640) {
+        toggleSidebar();
+      }
+    });
+  </script>
+</body>
+</html>
