@@ -124,67 +124,71 @@
     // Lucide Icons
     lucide.createIcons();
 
-    // Routes Data with precise names and coordinates in Galicia
+    // Routes Data with real locations (TikTok + Google Maps references)
     const routesData = [
       {
         id: 1,
-        title: "Bosque Carballeiro - Pinares",
-        subtitle: "Fragas y Robledales Salvajes",
-        category: "Bosque & Robledal",
+        title: "Ruta 1",
+        subtitle: "—",
+        category: "Pendiente",
         status: "Pendiente",
-        location: "Galicia (Zona Boscosa)",
-        lat: 42.8782,
-        lng: -8.0254,
-        distance: "12.4 km",
-        elevation: "+450m",
-        description: "Impresionante zona boscosa con predominio de carballeiro centenario (roble gallego) y pinares frondosos. Paisajes de frondosa vegetación y arstreams.",
-        tags: ["#Bosque", "#Hiking", "#Robledal"],
-        mapsQuery: "https://www.google.com/maps/search/bosque+carballeiro+galicia+senderismo/"
+        location: "(ver enlace)",
+        lat: 42.8800,
+        lng: -8.0200,
+        distance: "—",
+        elevation: "—",
+        description: "Ruta de exploración pendiente de catalogar.",
+        tags: ["#Pendiente"],
+        mapsQuery: "https://maps.app.goo.gl/kHAVvYc7HcS2ZJcK6?g_st=atm",
+        tiktok: "https://vm.tiktok.com/ZNdSfsoEK/"
       },
       {
         id: 2,
-        title: "Senderismo en Zona Montañosa",
-        subtitle: "Panorámicas sobre Valles Profundos",
-        category: "Panorámica",
+        title: "Ruta 2",
+        subtitle: "—",
+        category: "Pendiente",
         status: "Pendiente",
-        location: "Galicia (Zona Montañosa)",
-        lat: 42.4561,
-        lng: -7.8923,
-        distance: "15.8 km",
-        elevation: "+780m",
-        description: "Ruta de alta montaña con vistas panorámicas excepcionales sobre el paisaje salvaje gallego y valles fluviales encajados.",
-        tags: ["#Panorámica", "#Montaña", "#Valles"],
-        mapsQuery: "https://www.google.com/maps/search/panorámica+galicia+senderismo/"
+        location: "(ver enlace)",
+        lat: 42.4600,
+        lng: -7.8900,
+        distance: "—",
+        elevation: "—",
+        description: "Ruta de exploración pendiente de catalogar.",
+        tags: ["#Pendiente"],
+        mapsQuery: "https://maps.app.goo.gl/1bB3YM7ovSe6bqpS9?g_st=atm",
+        tiktok: "https://vm.tiktok.com/ZNdSf4JSy/"
       },
       {
         id: 3,
-        title: "Cumbre Salvaje",
-        subtitle: "Cima con Vistas de 360°",
-        category: "Cumbre",
+        title: "Ruta 3 (TikTok)",
+        subtitle: "—",
+        category: "Pendiente",
         status: "Pendiente",
-        location: "Galicia (Cumbre)",
-        lat: 42.2315,
-        lng: -8.3142,
-        distance: "9.5 km",
-        elevation: "+620m",
-        description: "Ascenso exigente hacia una cumbre emblemática con vistas amplias sobre todo el horizonte y crestas de gran belleza paisajística.",
-        tags: ["#Cumbre", "#Crestas", "#Alpinismo"],
-        mapsQuery: "https://www.google.com/maps/search/cumbre+galicia+senderismo/"
+        location: "(ver TikTok)",
+        lat: 42.2400,
+        lng: -8.3100,
+        distance: "—",
+        elevation: "—",
+        description: "Ruta de exploración pendiente de catalogar.",
+        tags: ["#Pendiente"],
+        mapsQuery: "https://maps.app.goo.gl/kHAVvYc7HcS2ZJcK6?g_st=atm",
+        tiktok: "https://vm.tiktok.com/ZNdSfsoEK/"
       },
       {
         id: 4,
-        title: "Zona Escarpada y Cañones",
-        subtitle: "Exploración Técnica de Desfiladeros",
-        category: "Escarpado & Salvaje",
+        title: "Ruta 4 (TikTok)",
+        subtitle: "—",
+        category: "Pendiente",
         status: "Pendiente",
-        location: "Galicia (Zona escarpada)",
-        lat: 42.7102,
-        lng: -7.4215,
-        distance: "11.0 km",
-        elevation: "+850m",
-        description: "Terreno técnico y escarpado rodeado de gargantas y formaciones rocosas únicas. Ideal para excursionistas experimentados.",
-        tags: ["#Escarpado", "#Desfiladero", "#Aventura"],
-        mapsQuery: "https://www.google.com/maps/search/zone+escarpada+galicia+senderismo/"
+        location: "(ver TikTok)",
+        lat: 42.7100,
+        lng: -7.4200,
+        distance: "—",
+        elevation: "—",
+        description: "Ruta de exploración pendiente de catalogar.",
+        tags: ["#Pendiente"],
+        mapsQuery: "https://maps.app.goo.gl/1bB3YM7ovSe6bqpS9?g_st=atm",
+        tiktok: "https://vm.tiktok.com/ZNdSf4JSy/"
       }
     ];
 
@@ -236,11 +240,18 @@
               <div><span class="text-slate-400">Distancia:</span> <strong class="text-white">${r.distance}</strong></div>
               <div><span class="text-slate-400">Desnivel:</span> <strong class="text-white">${r.elevation}</strong></div>
             </div>
-            <div class="pt-1 flex items-center justify-between border-t border-slate-800/80">
-              <span class="text-[11px] text-slate-400 truncate max-w-[150px]">📍 ${r.location}</span>
-              <a href="${r.mapsQuery}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold transition shadow-sm flex items-center gap-1">
-                Google Maps ↗
-              </a>
+            <div class="pt-1 flex flex-col gap-1.5 border-t border-slate-800/80">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] text-slate-400 truncate max-w-[150px]">📍 ${r.location}</span>
+                <div class="flex gap-1.5">
+                  <a href="${r.mapsQuery}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold transition shadow-sm flex items-center gap-1">
+                    Google Maps ↗
+                  </a>
+                  ${r.tiktok ? `<a href="${r.tiktok}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-xs font-semibold transition shadow-sm flex items-center gap-1">
+                    TikTok ↗
+                  </a>` : ''}
+                </div>
+              </div>
             </div>
           </div>
         `;
@@ -271,7 +282,10 @@
           </div>
           <p class="text-xs text-slate-300 line-clamp-2 leading-relaxed">${r.description}</p>
           <div class="flex items-center justify-between pt-2 border-t border-slate-800/85 text-xs text-slate-400">
-            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i> ${r.distance} · ${r.elevation}</span>
+            <span class="flex items-center gap-1 flex-wrap">
+              <a href="${r.mapsQuery}" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i> Google Maps</a>
+              ${r.tiktok ? `<a href="${r.tiktok}" target="_blank" rel="noopener noreferrer" class="text-pink-400 hover:text-pink-300 hover:underline flex items-center gap-1"><i data-lucide="video" class="w-3.5 h-3.5 text-pink-400"></i> TikTok</a>` : ''}
+            </span>
             <span class="text-emerald-400 font-semibold flex items-center gap-1">Ver en mapa →</span>
           </div>
         </div>
